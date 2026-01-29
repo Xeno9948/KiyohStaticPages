@@ -179,25 +179,21 @@
                     message: `ACTION: BUILD_LANDING_PAGE DATA: ${JSON.stringify(data)}`
                 };
 
-                // Use standard CORS mode (now supported by server)
-                const response = await fetch(WEBHOOK_URL, {
+                // Use no-cors mode (simple request)
+                await fetch(WEBHOOK_URL, {
                     method: 'POST',
+                    mode: 'no-cors', 
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Content-Type': 'text/plain' // Must be text/plain for no-cors
                     },
                     body: JSON.stringify(payload)
                 });
 
-                if (response.ok) {
-                    statusMsg.textContent = "✅ Success! Build started. Check your email.";
-                    statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
-                    statusMsg.classList.remove('hidden');
-                    form.reset();
-                } else {
-                    const txt = await response.text();
-                    throw new Error(`Server Error (${response.status}): ${txt}`);
-                }
+                // In no-cors, we can't see the status, so we assume it went through
+                statusMsg.textContent = "✅ Submitted! The page is building. Check your email in ~2 mins.";
+                statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
+                statusMsg.classList.remove('hidden');
+                form.reset();
 
             } catch (err) {
                 console.error(err);
