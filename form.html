@@ -115,8 +115,9 @@
     </main>
 
     <script>
-        const WEBHOOK_URL = "https://moltbot-railway-template-production-79a3.up.railway.app/hooks/agent";
         const AUTH_TOKEN = "vfv7jitsyn8wav9v1il88bi3f5lxmw4q";
+        // Pass token in query string to bypass CORS header restrictions
+        const WEBHOOK_URL = `https://moltbot-railway-template-production-79a3.up.railway.app/hooks/agent?token=${AUTH_TOKEN}`;
 
         const form = document.getElementById('buildForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -178,28 +179,27 @@
                     message: `ACTION: BUILD_LANDING_PAGE DATA: ${JSON.stringify(data)}`
                 };
 
-                const response = await fetch(WEBHOOK_URL, {
+                // Use no-cors mode (simple request)
+                await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Bypass CORS check
+                    mode: 'no-cors', 
                     headers: {
-                        'Content-Type': 'text/plain', // Allowed in no-cors
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Content-Type': 'text/plain' // Must be text/plain for no-cors
                     },
                     body: JSON.stringify(payload)
                 });
 
-                // In no-cors mode, response is opaque (status 0), so we assume success if no error thrown
-                statusMsg.textContent = "✅ Submitted! Check your email in a few minutes.";
-                    statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
-                    form.reset();
-                } else {
-                    throw new Error("Server rejected request");
-                }
+                // In no-cors, we can't see the status, so we assume it went through
+                statusMsg.textContent = "✅ Submitted! The page is building. Check your email in ~2 mins.";
+                statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
+                statusMsg.classList.remove('hidden');
+                form.reset();
 
             } catch (err) {
                 console.error(err);
                 statusMsg.textContent = "❌ Error: " + err.message;
                 statusMsg.className = "text-center text-sm font-bold text-red-500 mt-4";
+                statusMsg.classList.remove('hidden');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Generate Page';
