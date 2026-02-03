@@ -109,48 +109,59 @@
                     <input type="file" id="imageInput" accept="image/*"
                         class="w-full px-4 py-3 rounded-xl bg-white/50 border border-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
                 </div>
-                <p class="text-xs text-slate-400 mt-2">Image will be resized and optimized automatically.</p>
+                <p class="text-xs text-slate-400 mt-2">Image will be resized (max 800px) and compressed automatically.</p>
             </div>
 
-            <!-- Submit Actions -->
-            <div class="space-y-3">
-                <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:shadow-xl transition-all flex justify-center items-center gap-2">
-                    <span>📋 Copy Data for Chat</span>
-                </button>
-            </div>
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:shadow-xl transition-all flex justify-center items-center gap-2">
+                <span>Submit Build Request</span>
+            </button>
             
             <div id="statusMessage" class="hidden text-center text-sm font-bold"></div>
         </form>
     </main>
 
     <script>
+        const AUTH_TOKEN = "vfv7jitsyn8wav9v1il88bi3f5lxmw4q";
+        const WEBHOOK_URL = `https://moltbot-railway-template-production-79a3.up.railway.app/hooks/agent?token=${AUTH_TOKEN}`;
+
         const form = document.getElementById('buildForm');
         const submitBtn = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMessage');
         const imageInput = document.getElementById('imageInput');
 
+        // Robust Image Processor
         const processImage = (file) => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
+                        
+                        // Limit size to prevent payload issues
                         const MAX_WIDTH = 800;
                         let width = img.width;
                         let height = img.height;
+                        
                         if (width > MAX_WIDTH) {
                             height *= MAX_WIDTH / width;
                             width = MAX_WIDTH;
                         }
+                        
                         canvas.width = width;
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        
+                        // Use moderate compression (0.6)
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                        resolve(dataUrl);
                     };
+                    img.onerror = reject;
                     img.src = e.target.result;
                 };
+                reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
         };
@@ -159,7 +170,7 @@
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             if (imageInput.files[0]) {
-                submitBtn.innerHTML = '<div class="loader"></div> Processing Image...';
+                submitBtn.innerHTML = '<div class="loader"></div> Compressing Image...';
                 data['heroImage'] = await processImage(imageInput.files[0]);
             }
             return data;
@@ -167,28 +178,50 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loader"></div> Sending Request...';
+            statusMsg.classList.add('hidden');
+
             try {
-                submitBtn.disabled = true;
                 const data = await getFormData();
-                const jsonString = JSON.stringify(data);
                 
-                await navigator.clipboard.writeText(jsonString);
-                
-                statusMsg.textContent = "✅ Data Copied! Please paste it into the chat with the agent.";
+                // Construct the payload expected by Moltbot
+                const payload = {
+                    message: `ACTION: BUILD_LANDING_PAGE DATA: ${JSON.stringify(data)}`
+                };
+
+                // Use Standard CORS request (reliable data transmission)
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                }
+
+                const responseText = await response.text();
+                console.log("Server response:", responseText);
+
+                // Success State
+                statusMsg.textContent = "✅ Success! Build request sent. Check your email shortly.";
                 statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
                 statusMsg.classList.remove('hidden');
-                submitBtn.innerHTML = "✅ Copied!";
-                setTimeout(() => { 
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = "📋 Copy Data for Chat";
-                }, 3000);
+                form.reset();
+
             } catch (err) {
                 console.error(err);
-                statusMsg.textContent = "❌ Error: " + err.message;
+                statusMsg.textContent = "❌ Error: " + err.message + ". Please try again or contact support.";
                 statusMsg.className = "text-center text-sm font-bold text-red-500 mt-4";
                 statusMsg.classList.remove('hidden');
-                submitBtn.innerHTML = "📋 Copy Data for Chat";
+            } finally {
                 submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Build Request';
             }
         });
     </script>
