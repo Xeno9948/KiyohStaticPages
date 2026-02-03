@@ -130,17 +130,20 @@
         const statusMsg = document.getElementById('statusMessage');
         const imageInput = document.getElementById('imageInput');
 
-        // Robust Image Processor
+        // Robust & Fast Image Processor
         const processImage = (file) => {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
+                // Safety timeout: 10 seconds max
+                const timeout = setTimeout(() => reject(new Error("Image processing timed out")), 10000);
+
+                const img = new Image();
+                
+                img.onload = () => {
+                    try {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        // Limit size to prevent payload issues
+                        // Resize logic
                         const MAX_WIDTH = 800;
                         let width = img.width;
                         let height = img.height;
@@ -154,15 +157,25 @@
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Use moderate compression (0.6)
+                        // Moderate compression
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        clearTimeout(timeout);
+                        URL.revokeObjectURL(img.src); // Clean up memory
                         resolve(dataUrl);
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
+                    } catch (e) {
+                        clearTimeout(timeout);
+                        reject(e);
+                    }
                 };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
+
+                img.onerror = (e) => {
+                    clearTimeout(timeout);
+                    reject(new Error("Failed to load image data"));
+                };
+
+                // Use createObjectURL for speed (avoids reading entire file into base64 string first)
+                img.src = URL.createObjectURL(file);
             });
         };
 
