@@ -112,10 +112,16 @@
                 <p class="text-xs text-slate-400 mt-2">Image will be resized and optimized automatically.</p>
             </div>
 
-            <!-- Submit -->
-            <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:shadow-xl transition-all flex justify-center items-center gap-2">
-                <span>Generate Page</span>
-            </button>
+            <!-- Submit Actions -->
+            <div class="space-y-3">
+                <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:shadow-xl transition-all flex justify-center items-center gap-2">
+                    <span>Generate Page (Auto-Submit)</span>
+                </button>
+                
+                <button type="button" id="copyBtn" class="w-full bg-white text-slate-900 border-2 border-slate-900 font-bold py-4 rounded-xl shadow-sm hover:bg-slate-50 transition-all flex justify-center items-center gap-2">
+                    <span>📋 Copy Data (Paste in Chat)</span>
+                </button>
+            </div>
             
             <div id="statusMessage" class="hidden text-center text-sm font-bold"></div>
         </form>
@@ -123,15 +129,14 @@
 
     <script>
         const AUTH_TOKEN = "vfv7jitsyn8wav9v1il88bi3f5lxmw4q";
-        // Pass token in query string to bypass CORS header restrictions
         const WEBHOOK_URL = `https://moltbot-railway-template-production-79a3.up.railway.app/hooks/agent?token=${AUTH_TOKEN}`;
 
         const form = document.getElementById('buildForm');
         const submitBtn = document.getElementById('submitBtn');
+        const copyBtn = document.getElementById('copyBtn');
         const statusMsg = document.getElementById('statusMessage');
         const imageInput = document.getElementById('imageInput');
 
-        // Helper: Resize image and convert to Base64
         const processImage = (file) => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -140,23 +145,17 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
-                        // Resize logic (max 800px width for safety)
                         const MAX_WIDTH = 800;
                         let width = img.width;
                         let height = img.height;
-                        
                         if (width > MAX_WIDTH) {
                             height *= MAX_WIDTH / width;
                             width = MAX_WIDTH;
                         }
-                        
                         canvas.width = width;
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Compress to JPEG 0.5 quality (aggressive compression to ensure webhook delivery)
-                        resolve(canvas.toDataURL('image/jpeg', 0.5));
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                     img.src = e.target.result;
                 };
@@ -164,40 +163,62 @@
             });
         };
 
+        const getFormData = async () => {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            if (imageInput.files[0]) {
+                submitBtn.innerHTML = '<div class="loader"></div> Processing Image...';
+                data['heroImage'] = await processImage(imageInput.files[0]);
+            }
+            return data;
+        };
+
+        // Option 1: Copy to Clipboard (Reliable)
+        copyBtn.addEventListener('click', async () => {
+            try {
+                copyBtn.disabled = true;
+                const data = await getFormData();
+                const jsonString = JSON.stringify(data);
+                
+                await navigator.clipboard.writeText(jsonString);
+                
+                statusMsg.textContent = "✅ Data Copied! Paste it into the chat with the agent.";
+                statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
+                statusMsg.classList.remove('hidden');
+                copyBtn.innerHTML = "✅ Copied!";
+                setTimeout(() => { 
+                    copyBtn.disabled = false;
+                    copyBtn.innerHTML = "📋 Copy Data (Paste in Chat)";
+                }, 3000);
+            } catch (err) {
+                console.error(err);
+                statusMsg.textContent = "❌ Error: " + err.message;
+                statusMsg.className = "text-center text-sm font-bold text-red-500 mt-4";
+                statusMsg.classList.remove('hidden');
+            }
+        });
+
+        // Option 2: Webhook (Auto-Submit)
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // UI Loading State
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="loader"></div> Processing...';
+            submitBtn.innerHTML = '<div class="loader"></div> Sending...';
             statusMsg.classList.add('hidden');
 
             try {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                
-                // Handle Image
-                if (imageInput.files[0]) {
-                    data['heroImage'] = await processImage(imageInput.files[0]);
-                }
-
-                // Prepare Moltbot Payload
+                const data = await getFormData();
                 const payload = {
                     message: `ACTION: BUILD_LANDING_PAGE DATA: ${JSON.stringify(data)}`
                 };
 
-                // Use no-cors mode (simple request)
                 await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     mode: 'no-cors', 
-                    headers: {
-                        'Content-Type': 'text/plain' // Must be text/plain for no-cors
-                    },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
                 });
 
-                // In no-cors, we can't see the status, so we assume it went through
-                statusMsg.textContent = "✅ Submitted! The page is building. Check your email in ~2 mins.";
+                statusMsg.textContent = "✅ Submitted! If the image is large, it might be truncated. Use 'Copy Data' if it fails.";
                 statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
                 statusMsg.classList.remove('hidden');
                 form.reset();
@@ -209,7 +230,7 @@
                 statusMsg.classList.remove('hidden');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Generate Page';
+                submitBtn.innerHTML = 'Generate Page (Auto-Submit)';
             }
         });
     </script>
