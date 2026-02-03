@@ -115,11 +115,7 @@
             <!-- Submit Actions -->
             <div class="space-y-3">
                 <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:shadow-xl transition-all flex justify-center items-center gap-2">
-                    <span>Generate Page (Auto-Submit)</span>
-                </button>
-                
-                <button type="button" id="copyBtn" class="w-full bg-white text-slate-900 border-2 border-slate-900 font-bold py-4 rounded-xl shadow-sm hover:bg-slate-50 transition-all flex justify-center items-center gap-2">
-                    <span>📋 Copy Data (Paste in Chat)</span>
+                    <span>📋 Copy Data for Chat</span>
                 </button>
             </div>
             
@@ -128,12 +124,8 @@
     </main>
 
     <script>
-        const AUTH_TOKEN = "vfv7jitsyn8wav9v1il88bi3f5lxmw4q";
-        const WEBHOOK_URL = `https://moltbot-railway-template-production-79a3.up.railway.app/hooks/agent?token=${AUTH_TOKEN}`;
-
         const form = document.getElementById('buildForm');
         const submitBtn = document.getElementById('submitBtn');
-        const copyBtn = document.getElementById('copyBtn');
         const statusMsg = document.getElementById('statusMessage');
         const imageInput = document.getElementById('imageInput');
 
@@ -173,64 +165,30 @@
             return data;
         };
 
-        // Option 1: Copy to Clipboard (Reliable)
-        copyBtn.addEventListener('click', async () => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
             try {
-                copyBtn.disabled = true;
+                submitBtn.disabled = true;
                 const data = await getFormData();
                 const jsonString = JSON.stringify(data);
                 
                 await navigator.clipboard.writeText(jsonString);
                 
-                statusMsg.textContent = "✅ Data Copied! Paste it into the chat with the agent.";
+                statusMsg.textContent = "✅ Data Copied! Please paste it into the chat with the agent.";
                 statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
                 statusMsg.classList.remove('hidden');
-                copyBtn.innerHTML = "✅ Copied!";
+                submitBtn.innerHTML = "✅ Copied!";
                 setTimeout(() => { 
-                    copyBtn.disabled = false;
-                    copyBtn.innerHTML = "📋 Copy Data (Paste in Chat)";
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "📋 Copy Data for Chat";
                 }, 3000);
             } catch (err) {
                 console.error(err);
                 statusMsg.textContent = "❌ Error: " + err.message;
                 statusMsg.className = "text-center text-sm font-bold text-red-500 mt-4";
                 statusMsg.classList.remove('hidden');
-            }
-        });
-
-        // Option 2: Webhook (Auto-Submit)
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<div class="loader"></div> Sending...';
-            statusMsg.classList.add('hidden');
-
-            try {
-                const data = await getFormData();
-                const payload = {
-                    message: `ACTION: BUILD_LANDING_PAGE DATA: ${JSON.stringify(data)}`
-                };
-
-                await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-
-                statusMsg.textContent = "✅ Submitted! If the image is large, it might be truncated. Use 'Copy Data' if it fails.";
-                statusMsg.className = "text-center text-sm font-bold text-green-600 mt-4";
-                statusMsg.classList.remove('hidden');
-                form.reset();
-
-            } catch (err) {
-                console.error(err);
-                statusMsg.textContent = "❌ Error: " + err.message;
-                statusMsg.className = "text-center text-sm font-bold text-red-500 mt-4";
-                statusMsg.classList.remove('hidden');
-            } finally {
+                submitBtn.innerHTML = "📋 Copy Data for Chat";
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Generate Page (Auto-Submit)';
             }
         });
     </script>
