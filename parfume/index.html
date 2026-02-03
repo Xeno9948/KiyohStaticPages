@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chantal's Parfume | The best selling perfume in Paarl!</title>
+    <meta name="description" content="Chantal's Parfume - The best selling perfume in Paarl!">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#db2777', // pink-600
+                        primaryHover: '#be185d', // pink-700
+                        secondary: '#fdf2f8', // pink-50
+                        accent: '#831843', // pink-900
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .liquid-gradient {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="liquid-gradient text-slate-900 min-h-screen">
+
+    <nav class="fixed top-0 w-full z-50 p-4">
+        <div class="max-w-6xl mx-auto glass rounded-2xl px-6 py-3 flex justify-between items-center shadow-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">🌸</span>
+                <span class="font-extrabold tracking-tight text-xl text-accent">Chantal's Parfume</span>
+            </div>
+            <a href="tel:0123456789" class="bg-primary text-white px-5 py-2 rounded-xl font-bold text-sm hover:scale-105 transition shadow-md hover:bg-primaryHover">Contact Us</a>
+        </div>
+    </nav>
+
+    <header class="pt-32 pb-12 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 bg-white/60 border border-white/50 px-4 py-1.5 rounded-full mb-6 shadow-sm">
+                <span class="flex h-2 w-2 rounded-full bg-primary"></span>
+                <span class="text-xs font-bold uppercase tracking-widest text-primary">Best in Paarl</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-accent drop-shadow-sm">
+                The best selling perfume in Paarl!
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-700 mb-10 leading-relaxed max-w-2xl mx-auto font-medium">
+                Discover your signature scent at Chantal's Parfume. Exquisite fragrances curated just for you.
+            </p>
+
+            <div class="mb-12 flex justify-center">
+                <div class="glass p-4 rounded-3xl inline-block shadow-xl bg-white/40">
+                    <iframe frameborder="1" allowtransparency="false" src="https://www.kiyoh.com/retrieve-widget.html?color=white&allowTransparency=false&button=true&lang=en&tenantId=98&locationId=1080586" width="400" height="222"></iframe>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="#about" class="bg-primary text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-primaryHover transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">Explore Scents</a>
+                <a href="https://www.kiyoh.com/reviews/1077528/Kiyoh" class="bg-white text-accent border border-pink-200 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-pink-50 transition-all shadow-md hover:shadow-lg">Read Reviews</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass p-8 rounded-[2rem] shadow-md hover:shadow-xl transition duration-300">
+            <div class="text-4xl mb-4">📍</div>
+            <h3 class="font-bold text-xl mb-2 text-accent">Location</h3>
+            <p class="text-slate-600 font-medium">Paarl, Western Cape</p>
+        </div>
+        <div class="glass p-8 rounded-[2rem] shadow-md hover:shadow-xl transition duration-300">
+             <div class="text-4xl mb-4">🕒</div>
+            <h3 class="font-bold text-xl mb-2 text-accent">Opening Hours</h3>
+            <p class="text-slate-600 font-medium">Mon-Sat: 9am - 5pm</p>
+        </div>
+        <div class="glass p-8 rounded-[2rem] shadow-md hover:shadow-xl transition duration-300">
+             <div class="text-4xl mb-4">💖</div>
+            <h3 class="font-bold text-xl mb-2 text-accent">Social</h3>
+            <a href="https://Facebook.com" class="text-primary font-bold hover:underline text-lg">Follow Us on Facebook →</a>
+        </div>
+    </section>
+
+    <section id="about" class="max-w-5xl mx-auto py-20 px-6">
+        <div class="glass p-10 md:p-16 rounded-[3rem] shadow-2xl flex flex-col md:flex-row gap-10 items-center">
+            <div class="w-full md:w-1/2">
+                <img src="hero.jpg" alt="Chantal's Parfume" class="rounded-2xl shadow-lg w-full h-auto object-cover transform rotate-2 hover:rotate-0 transition duration-500">
+            </div>
+            <div class="w-full md:w-1/2">
+                <h2 class="text-3xl font-extrabold mb-6 tracking-tight text-accent">About Chantal's Parfume</h2>
+                <div class="space-y-6 text-slate-700 leading-relaxed font-medium">
+                    <p>Welcome to Chantal's Parfume, the premier destination for fragrance lovers in Paarl. We believe that a scent is more than just a smell; it's a memory, an emotion, and a statement.</p>
+                    <p>Our collection features the finest perfumes, ensuring you find the perfect match for your personality and style. Come visit us and let us help you find your new favorite fragrance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 text-center text-slate-500 text-sm font-medium">
+        <div class="mb-6 flex justify-center gap-8">
+            <a href="https://Facebook.com" class="hover:text-primary transition text-lg">Facebook</a>
+            <a href="https://www.kiyoh.com/reviews/1077528/Kiyoh" class="hover:text-primary transition text-lg">Kiyoh Profile</a>
+        </div>
+        <p>&copy; 2026 Chantal's Parfume. Powered by Kiyoh Pages.</p>
+    </footer>
+
+</body>
+</html>
